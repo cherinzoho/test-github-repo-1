@@ -1,0 +1,16 @@
+# Simulation config — valid TOML (passes check-toml)
+
+[simulation]
+world        = "zoho_robotics_lab"
+gravity      = [0.0, 0.0, -9.81]
+real_time_factor = 1.0
+headless     = false
+
+[simulation.arm]
+model_path   = "models/robot_arm/arm.urdf"
+initial_pose = [0.5, 0.0, 0.8, 0.0, 0.0, 0.0]
+
+[simulation.camera]
+topic        = "/camera/image_raw"
+resolution   = [1280, 720]
+fps          = 30

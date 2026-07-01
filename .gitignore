@@ -49,3 +49,29 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# ── Added by repo-config ─────────────────────────────────────────────────────
+# ROS colcon install space
+install/
+# ROS colcon log output
+log/
+# ROS 2 bag files
+*.db3
+# ROS 2 bag files
+*.bag
+# ROS 2 bag files
+*.mcap
+# Node.js hook dependencies
+node_modules/
+# npm cache
+.npm/
+# repo-config state file
+.repo-config-state.json
+# run logs
+*.log
+# local secrets
+*.secrets
+# local secrets
+project.secrets
+# Python bytecode cache
+__pycache__/

@@ -1,0 +1,12 @@
+{
+  "launch": {
+    "nodes": [
+      {
+        "package": "robot_arm",
+        "executable": "arm_node",
+        INVALID_KEY_WITHOUT_QUOTES: true,
+        "trailing_comma": "triggers JSON parse error",
+      }
+    ]
+  }
+}

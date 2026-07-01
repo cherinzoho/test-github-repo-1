@@ -1,0 +1,140 @@
+[project]
+name = "test-github-repo-1"
+ros2_distro = "jazzy"
+
+[git]
+min_version        = "2.28"
+integration_branch = "develop"
+release_branch     = "main"
+
+# ── Commit conventions ────────────────────────────────────────────────────────
+
+[commit]
+# Standard types — include sim and ci for robotics projects.
+# Add or remove to match your team's workflow.
+types              = ["feat", "fix", "refactor", "test", "sim", "ci", "docs", "chore", "build"]
+subject_max_length = 72
+ticket_id_pattern  = "[A-Z][A-Z0-9]*-[0-9]+"
+ticket_keywords    = ["closes", "fixes", "relates to"]
+example_ticket_id  = "ARM-42"
+
+[commit.scopes]
+# One entry per subsystem. Key = scope used in commit message, value = prompt label.
+arm       = "Robotic arm"
+amr       = "Autonomous mobile robot"
+humanoid  = "Humanoid robot"
+sim       = "Gazebo simulation"
+nav       = "Navigation stack"
+slam      = "SLAM and mapping"
+perception = "Sensor processing"
+control   = "Control systems"
+hw        = "Hardware and firmware"
+sdk       = "SDK and interfaces"
+infra     = "Server infrastructure"
+docs      = "Documentation"
+ci        = "CI/CD pipeline files"
+repo      = "Repository config files"
+
+# ── Branch conventions ────────────────────────────────────────────────────────
+
+[branch]
+# feature/TICKET-description  bugfix/TICKET-description  etc.
+# experiment/* and release/* branches do not require a ticket ID.
+types           = [
+  "feature", "bugfix", "hotfix", "refactor",
+  "sim", "experiment", "release", "chore",
+]
+ticket_required = ["feature", "bugfix", "hotfix", "refactor", "sim"]
+stale_days      = 60
+default_branch  = "main"
+
+# ── Platform ────────────────────────────────────────────────────────────────
+
+# # Zoho Git. Run 'repo-config store-secrets' once to store OAuth credentials
+# # in the OS keychain. Secrets (client_secret, refresh_token) are never committed.
+
+# [platform.zoho]
+# # Connection details — find these in Zoho Repository → Settings → API
+# org_id        = ""   # Zoho organisation ID   (numeric string)
+# repository_id = ""   # Zoho repository ID     (numeric string)
+# user_email    = ""   # CI / service-account email (X-ZR-Email header)
+# # base_url = "https://repository.zoho.in"  # change for .eu / .com.au regions
+
+# required_approvals_develop = 1
+# required_approvals_main    = 2
+# push_access_level          = "NONE"
+# merge_access_level         = "NONE"
+# code_owners                = true
+# force_push                 = false
+
+# # Per-branch code reviewers (required by the Zoho API)
+# [platform.zoho.code_review_reviewers]
+# develop = ["lead@example.com"]
+# main    = ["cto@example.com", "lead@example.com"]
+# GitHub. Set GITHUB_TOKEN or authenticate via 'gh auth login' before applying.
+# Token needs: Administration + Branch protection (read/write) + Metadata (read).
+
+[platform.github]
+required_approvals_develop = 1
+required_approvals_main    = 2
+enforce_admins_main        = true
+dismiss_stale_reviews      = true
+status_checks              = ["branch-name", "pr-title", "pr-ticket", "cpp-format", "python-style"]
+# push_teams_develop        = []   # GitHub team slugs that may push to develop
+# push_teams_main           = []   # GitHub team slugs that may push to main
+# push_users_develop        = []   # GitHub user logins that may push to develop
+# push_users_main           = []   # GitHub user logins that may push to main
+# required_reviewer_teams   = []   # Org/team slugs written to .github/CODEOWNERS
+
+# # GitLab. Set GITLAB_TOKEN (personal access token, api scope) and
+# # GITLAB_URL (e.g. https://gitlab.example.com) before applying.
+
+# [platform.gitlab]
+# required_approvals_develop = 1
+# required_approvals_main    = 2
+# allow_force_push           = false
+# # required_reviewer_groups    = []   # GitLab group paths (e.g. "org/leads")
+# # required_reviewer_approvals = 1
+# ── Developer tooling ─────────────────────────────────────────────────────────
+
+[developer]
+node_major_version       = 20
+pipx_min_version         = "1.0"
+precommit_min_version    = "3.0"
+commitlint_cli_version   = "^19.0.0"
+commitlint_config_version = "^19.0.0"
+husky_version            = "^9.0.0"
+
+# ── Code style ────────────────────────────────────────────────────────────────
+
+[code_style]
+clang_format_version = 14
+python_min_version   = "3.8"
+max_line_length      = 100
+
+# ── Pre-commit hook revisions ─────────────────────────────────────────────────
+# Check for updates: pre-commit autoupdate --dry-run
+
+[hook_revisions]
+precommit_hooks = "v4.6.0"
+clang_format    = "v14.0.6"
+black           = "23.11.0"
+flake8          = "6.1.0"
+
+# ── CI / GitHub Actions ───────────────────────────────────────────────────────
+
+[ci]
+runner_general          = "ubuntu-latest"
+runner_lint             = "ubuntu-22.04"
+stale_branch_cron       = "0 8 * * 1"
+max_file_size_kb        = 5120
+workflow_trigger_branch = "experiment/register-workflow-checks"
+
+# ── Code review tooling ───────────────────────────────────────────────────────
+
+[code_review]
+cpp_clang_tidy   = true
+cpp_clang_format = true
+ros2_ament_lint  = true
+python_ruff      = true
+python_mypy      = true

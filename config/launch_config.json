@@ -1,0 +1,21 @@
+{
+  "launch": {
+    "nodes": [
+      {
+        "package": "robot_arm",
+        "executable": "arm_node",
+        "name": "arm",
+        "parameters": ["config/arm_params.yaml"]
+      },
+      {
+        "package": "perception",
+        "executable": "vision_node",
+        "name": "vision",
+        "remappings": [
+          ["camera/image_raw", "/realsense/color/image_raw"]
+        ]
+      }
+    ],
+    "use_sim_time": false
+  }
+}

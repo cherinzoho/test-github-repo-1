@@ -1,0 +1,10 @@
+# BAD — contains merge conflict markers.
+# check-merge-conflict hook will BLOCK this file.
+arm_node:
+  ros__parameters:
+<<<<<<< HEAD
+    max_velocity: 0.5
+=======
+    max_velocity: 1.0
+>>>>>>> feature/faster-arm
+    joint_names: [shoulder_pan, elbow_flex]

@@ -1,0 +1,11 @@
+# BAD YAML — intentionally invalid syntax to test check-yaml.
+# DO NOT commit without fixing.
+arm_node:
+  ros__parameters:
+    joint_names:
+      - shoulder_pan
+      - shoulder_lift
+    max_velocity: 0.5
+    bad_mapping: {unclosed: bracket
+    duplicate_key: first
+    duplicate_key: second
