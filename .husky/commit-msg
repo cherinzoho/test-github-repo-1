@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+# commit-msg hook — validates commit message format using commitlint.
+# Managed by repo-config — do not edit manually.
+#
+# All output goes to stderr so Husky v9 forwards it to the terminal.
+exec 1>&2  # redirect stdout to stderr so Husky v9 forwards output to the terminal
+
+if [ ! -d "node_modules/@commitlint/config-conventional" ]; then
+  echo "⚠ @commitlint/config-conventional not installed — run 'npm install' to enable commit message validation" >&2
+  exit 0
+fi
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+set +e
+LINT_OUTPUT=$(npx --no -- commitlint --edit "$COMMIT_MSG_FILE" 2>&1)
+LINT_EXIT=$?
+set -e
+
+if [ $LINT_EXIT -ne 0 ]; then
+  echo "" >&2
+  echo "  ✖  Commit message rejected" >&2
+  echo "" >&2
+  echo "  Your message: $COMMIT_MSG" >&2
+  echo "" >&2
+  echo "  Required format:  type(scope): description" >&2
+  echo "                                ^ space required after colon" >&2
+  echo "" >&2
+  echo "  Allowed types:  feat, fix, refactor, test, sim, ci, docs, chore, build" >&2
+
+  echo "  Allowed scopes: arm, amr, humanoid, sim, nav, slam, perception, control, hw, sdk, infra, docs, ci, repo" >&2
+
+  echo "  Max length:     72 characters" >&2
+  echo "" >&2
+  echo "  Example: feat(arm): add ARM-42 gripper torque control" >&2
+  echo "" >&2
+  echo "  Common mistakes:" >&2
+  echo "    ✖  feat(arm):missing space      ← no space after colon" >&2
+  echo "    ✖  feat: no scope               ← scope is required" >&2
+  echo "    ✖  feat(wrong): bad scope       ← scope not in allowed list" >&2
+  echo "    ✖  Fixed the bug                ← missing type and scope" >&2
+  echo "" >&2
+  echo "  commitlint detail:" >&2
+  echo "$LINT_OUTPUT" | sed 's/^/    /' >&2
+  exit 1
+fi
+
+exit 0

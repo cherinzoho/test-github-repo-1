@@ -1,0 +1,96 @@
+#!/usr/bin/env sh
+# pre-push hook — validates branch naming convention before pushing.
+# Managed by repo-config — do not edit manually.
+
+# Read push refs from stdin (git sends one line per ref being pushed/deleted).
+# Must be read early — pre-commit also reads stdin.
+push_input=$(cat)
+
+# Delete operations send 0000...0000 as the local sha — skip validation for those.
+ZEROS="0000000000000000000000000000000000000000"
+if echo "$push_input" | grep -q " $ZEROS "; then
+  exit 0
+fi
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Integration and release branches bypass naming validation
+if echo "$branch" | grep -qE "^(develop|main)$"; then
+  if ! command -v pre-commit > /dev/null 2>&1; then
+    exit 0
+  fi
+  echo "$push_input" | pre-commit run --hook-stage=push
+  exit $?
+fi
+
+TICKET_TYPES="feature|bugfix|hotfix|refactor|sim"
+FREE_TYPES="experiment|release|chore"
+TICKET_PAT="[A-Z][A-Z0-9]*-[0-9]+"
+
+# Ticket-required types: type/TICKET-ID-short-description
+if echo "$branch" | grep -qE "^($TICKET_TYPES)/"; then
+  if ! echo "$branch" | grep -qE "^($TICKET_TYPES)/$TICKET_PAT-[a-z0-9][a-z0-9-]*$"; then
+    echo ""
+    echo "  ✖  Branch name '$branch' does not follow convention"
+    echo ""
+    echo "  Expected: <type>/ARM-42-short-description"
+    echo ""
+    echo "  Ticket branches (require ARM-42-style ID):"
+
+    echo "    feature/ARM-42-brief-description"
+
+    echo "    bugfix/ARM-42-brief-description"
+
+    echo "    hotfix/ARM-42-brief-description"
+
+    echo "    refactor/ARM-42-brief-description"
+
+    echo "    sim/ARM-42-brief-description"
+
+    echo ""
+    echo "  Ticket ID format: [A-Z][A-Z0-9]*-[0-9]+  (e.g. ARM-42)"
+    exit 1
+  fi
+
+# Free-form types: type/short-description (no ticket required)
+elif echo "$branch" | grep -qE "^($FREE_TYPES)/"; then
+  if ! echo "$branch" | grep -qE "^($FREE_TYPES)/[a-z0-9][a-z0-9._-]*$"; then
+    echo ""
+    echo "  ✖  Branch name '$branch' has invalid description"
+    echo "  Expected lowercase slug: experiment/...  release/...  chore/..."
+    exit 1
+  fi
+
+else
+  echo ""
+  echo "  ✖  Branch name '$branch' uses an unknown type"
+  echo ""
+  echo "  Allowed types:"
+
+  echo "    feature/ARM-42-description   (ticket ID required)"
+
+  echo "    bugfix/ARM-42-description   (ticket ID required)"
+
+  echo "    hotfix/ARM-42-description   (ticket ID required)"
+
+  echo "    refactor/ARM-42-description   (ticket ID required)"
+
+  echo "    sim/ARM-42-description   (ticket ID required)"
+
+
+  echo "    experiment/short-description"
+
+  echo "    release/short-description"
+
+  echo "    chore/short-description"
+
+  exit 1
+fi
+
+echo "  ✔  Branch name '$branch' is valid"
+
+if ! command -v pre-commit > /dev/null 2>&1; then
+  echo "⚠ pre-commit not installed — run 'repo-config hook-setup' to enable pre-push checks"
+  exit 0
+fi
+echo "$push_input" | pre-commit run --hook-stage=push

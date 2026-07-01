@@ -1,0 +1,122 @@
+# Managed by repo-config — do not edit manually.
+# Re-run `repo-config apply` to regenerate.
+#
+# Commit-message validation is handled by the husky commit-msg hook
+# (.husky/commit-msg) via commitlint — not by pre-commit — so that
+# developers see rich, config-driven error messages.
+repos:
+  # ── General file hygiene ───────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=10240]
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args:
+          - --branch=develop
+          - --branch=main
+
+  # ── C++ formatting ──────────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        types_or: [c, c++]
+
+  # ── C++ static analysis: style (cpplint) and correctness (cppcheck) ────────
+  #
+  # cpplint enforces the Google C++ Style Guide — the same rules ament_cpplint
+  # uses in the ROS 2 CI pipeline.  The suppressed categories (legal/copyright,
+  # build/include_order) generate noise without adding signal in a ROS 2 repo.
+  #
+  # cppcheck finds correctness issues clang-format/cpplint cannot: uninitialised
+  # variables, null-pointer dereferences, memory leaks, and integer overflows.
+  - repo: https://github.com/cpplint/cpplint
+    rev: 1.6.1
+    hooks:
+      - id: cpplint
+        args:
+          - --filter=-legal/copyright,-build/include_order,-build/include_subdir
+          - --linelength=100
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: cppcheck
+        args:
+          - --error-exitcode=1
+          - --std=c++17
+          - --suppress=missingIncludeSystem
+          - --suppress=unmatchedSuppression
+          - --inline-suppr
+
+  # ── Python linting and formatting ───────────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # ── ROS2 anti-pattern checks ───────────────────────────────────────────────
+  #
+  # These grep-based hooks catch the most common ROS2-specific mistakes that
+  # general-purpose C++ tools miss.  They run fast (no compilation required)
+  # and block commits before they land in review.
+  - repo: local
+    hooks:
+      # Checklist §8 — Logging
+      # RCLCPP_INFO/WARN/ERROR macros route through the ROS2 logging system
+      # (runtime log-level control, structured output, ros2 bag integration).
+      # std::cout / printf bypass all of that and produce garbled output in
+      # multi-node or composable-node deployments.
+      - id: no-cout-in-ros2-nodes
+        name: "ROS2: no std::cout or printf in node source"
+        language: pygrep
+        entry: "(std::cout|std::cerr|\\bprintf\\s*\\(|\\bfprintf\\s*\\()"
+        types_or: [c++]
+        files: '(src|include)/.*\.(cpp|hpp|h)$'
+
+      # Checklist §6 — Callback Patterns
+      # Blocking inside a callback stalls the executor and starves every other
+      # subscription/service on the same thread.  Use rclcpp::TimerBase for
+      # periodic work instead.
+      - id: no-while-true-in-ros2-nodes
+        name: "ROS2: no while(true) loops in node source"
+        language: pygrep
+        entry: 'while\s*\(\s*(true|1)\s*\)'
+        types_or: [c++]
+        files: 'src/.*\.cpp$'
+
+      # Checklist §6 — Callback Patterns
+      # sleep() / sleep_for() inside a callback blocks the executor thread.
+      # Store the latest message in a member variable and process it from a
+      # wall-timer callback at a controlled rate instead.
+      - id: no-sleep-in-ros2-callbacks
+        name: "ROS2: no blocking sleep() in node source"
+        language: pygrep
+        entry: '(rclcpp::sleep_for|std::this_thread::sleep|[^_]\bsleep\s*\()'
+        types_or: [c++]
+        files: 'src/.*\.cpp$'
+
+      # ── File blockers ──────────────────────────────────────────────────────
+      - id: block-ros2-bags
+        name: Block ROS2 bag and database files
+        language: fail
+        entry: "ROS2 bag / DB files must not be committed — add to .gitignore instead"
+        types_or: [file]
+        files: '\.(bag|db|sqlite|sqlite3|db3)$'
+
+      - id: block-build-artifacts
+        name: Block build artifacts
+        language: fail
+        entry: "Build artifacts must not be committed — add build/ to .gitignore"
+        types_or: [file]
+        files: '^(build|install|devel|log)/|\.o$|\.so$|\.a$|__pycache__/'

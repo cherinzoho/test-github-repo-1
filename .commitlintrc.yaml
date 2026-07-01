@@ -1,0 +1,24 @@
+# Managed by repo-config — do not edit manually.
+# Re-run `repo-config apply` to regenerate.
+extends:
+  - "@commitlint/config-conventional"
+rules:
+  type-enum:
+    - 2
+    - always
+    - ["feat", "fix", "refactor", "test", "sim", "ci", "docs", "chore", "build"]
+  scope-empty:
+    - 2
+    - never
+
+  scope-enum:
+    - 2
+    - always
+    - ["arm", "amr", "humanoid", "sim", "nav", "slam", "perception", "control", "hw", "sdk", "infra", "docs", "ci", "repo"]
+
+  subject-case:
+    - 0
+  header-max-length:
+    - 2
+    - always
+    - 

@@ -1,0 +1,67 @@
+# Managed by repo-config — do not edit manually.
+# Re-run `repo-config apply` to regenerate.
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  branch-name:
+    name: branch-name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate branch name
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-$(git rev-parse --abbrev-ref HEAD)}"
+          PATTERN="^(feature|bugfix|hotfix|refactor|sim|experiment|release|chore)\/(feature|bugfix|hotfix|refactor|sim-[0-9]+|.+)$"
+          echo "Branch: $BRANCH"
+          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
+            echo "Branch name does not match pattern: $PATTERN"
+            exit 1
+          fi
+
+  pr-title:
+    name: pr-title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          TYPES="feat|fix|refactor|test|sim|ci|docs|chore|build"
+          PATTERN="^($TYPES)(\(.+\))?(!)?: .{1,100}$"
+          if ! echo "$TITLE" | grep -qE "$PATTERN"; then
+            echo "PR title '$TITLE' does not match conventional commits pattern"
+            exit 1
+          fi
+
+
+  cpp-format:
+    name: cpp-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+      - name: Check C++ formatting
+        run: |
+          find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | \
+            xargs -r clang-format --dry-run --Werror
+
+
+
+  python-style:
+    name: python-style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Run ruff
+        run: uvx ruff@0.15.20 check . && uvx ruff@0.15.20 format --check .
+

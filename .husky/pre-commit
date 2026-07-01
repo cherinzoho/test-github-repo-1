@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+# Managed by repo-config — do not edit manually.
+if ! command -v pre-commit > /dev/null 2>&1; then
+  echo "⚠ pre-commit not installed — run 'repo-config hook-setup' to enable pre-commit checks"
+  exit 0
+fi
+pre-commit run --hook-stage=commit
